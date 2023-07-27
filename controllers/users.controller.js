@@ -4,20 +4,20 @@ const jwt = require('jsonwebtoken');
 
 class UserController {
 
-    extractUser(req) {
-        return new User({
-            name: req.body.name,
-            email: req.body.email,
-            passwordHash: bcrypt.hashSync(req.body.password, 10),
-            phone: req.body.phone,
-            isAdmin: req.body.isAdmin,
-            street: req.body.street,
-            apartment: req.body.apartment,
-            zip: req.body.zip,
-            city: req.body.city,
-            country: req.body.country,
-        })
-    }
+    // extractUser(req) {
+    //     return new User({
+    //         name: req.body.name,
+    //         email: req.body.email,
+    //         passwordHash: bcrypt.hashSync(req.body.password, 10),
+    //         phone: req.body.phone,
+    //         isAdmin: req.body.isAdmin,
+    //         street: req.body.street,
+    //         apartment: req.body.apartment,
+    //         zip: req.body.zip,
+    //         city: req.body.city,
+    //         country: req.body.country,
+    //     })
+    // }
 
     async getUsers(req, res) {
         try {
@@ -45,7 +45,18 @@ class UserController {
 
     async addUser(req, res) {
         try {
-            let user = this.extractUser(req);
+            let user = new User({
+                name: req.body.name,
+                email: req.body.email,
+                passwordHash: bcrypt.hashSync(req.body.password, 10),
+                phone: req.body.phone,
+                isAdmin: req.body.isAdmin,
+                street: req.body.street,
+                apartment: req.body.apartment,
+                zip: req.body.zip,
+                city: req.body.city,
+                country: req.body.country,
+            });
             user = await user.save();
         
             if(!user)
@@ -122,7 +133,18 @@ class UserController {
 
     async userRegister(req, res) { 
         try {
-            let user = this.extractUser(req);
+            let user = new User({
+                name: req.body.name,
+                email: req.body.email,
+                passwordHash: bcrypt.hashSync(req.body.password, 10),
+                phone: req.body.phone,
+                isAdmin: req.body.isAdmin,
+                street: req.body.street,
+                apartment: req.body.apartment,
+                zip: req.body.zip,
+                city: req.body.city,
+                country: req.body.country,
+            });
             user = await user.save();
         
             if(!user)

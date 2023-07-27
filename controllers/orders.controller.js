@@ -15,7 +15,7 @@ class OrderController {
         }
     }
 
-    async getOrder(req, res) {
+    async getOrderById(req, res) {
         try {
             const order = await Order.findById(req.params.id)
             .populate('user', 'name')
@@ -125,7 +125,7 @@ class OrderController {
         }
     }
 
-    async getOrderCount(req, res) {
+    async getTotalOrders(req, res) {
         try {
             const orderCount = await Order.countDocuments((count) => count)
         

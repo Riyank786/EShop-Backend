@@ -157,7 +157,7 @@ class ProductController {
         }
     }
 
-    async updateGallery(req, res) {
+    async updateProductGallery(req, res) {
         try {
             if(!mongoose.isValidObjectId(req.params.id)) {
                     return res.status(400).send('Invalid Product Id')

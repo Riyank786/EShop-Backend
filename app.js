@@ -10,14 +10,14 @@ const errorHandler = require('./helpers/error-handler');
 
 
 app.use(cors());
-app.options('*', cors())
+app.options('*', cors());
 
 //middleware
 app.use(bodyParser.json());
 app.use(morgan('tiny'));
+app.use('/public/uploads', express.static(__dirname + '/public/uploads'));
 app.use(authJwt());
 app.use(errorHandler);
-app.use('/public/uploads', express.static(__dirname + '/public/uploads'));
 
 //Routes
 const categoriesRoutes = require('./routes/categories');
