@@ -19,4 +19,6 @@ router.get(`/get/count`, OrderController.getTotalOrders);
 
 router.get(`/get/userorders/:userid`, OrderController.getUserOrders);
 
+router.post('/create-checkout-session', OrderController.createCheckoutSession);
+
 module.exports =router;

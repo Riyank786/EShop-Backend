@@ -10,13 +10,12 @@ function authJwt() {
     })
     .unless({
         path: [
-            // {url: /\/public\/uploads(.*)/ , methods: ['GET', 'OPTIONS'] },
-            // {url: /\/api\/v1\/products(.*)/ , methods: ['GET', 'OPTIONS'] },
-            // {url: /\/api\/v1\/categories(.*)/ , methods: ['GET', 'OPTIONS'] },
-            // `${api}/users/login`,
-            // `${api}/users/register`,
-            // allow anonymous users to access all the routes
-            {url: /\/api\/v1(.*)/  },
+            {url: /\/public\/uploads(.*)/ , methods: ['GET', 'OPTIONS'] },
+            {url: /\/api\/v1\/products(.*)/ , methods: ['GET', 'OPTIONS'] },
+            {url: /\/api\/v1\/categories(.*)/ , methods: ['GET', 'OPTIONS'] },
+            {url: /\/api\/v1\/orders(.*)/,methods: ['GET', 'OPTIONS', 'POST'] },
+            `${api}/users/login`,
+            `${api}/users/register`,
         ]
     })
 }

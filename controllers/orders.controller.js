@@ -1,6 +1,7 @@
 const {Order} = require('../schemas/order');
+const {Product} = require('../schemas/product');
 const { OrderItem } = require('../schemas/order-item');
-
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 class OrderController {
 
     async getOrders(req, res) {
@@ -11,7 +12,7 @@ class OrderController {
             } 
             res.send(orderList);       
         } catch (error) {
-            return res.status(500).json({success: false, error: err}) 
+            return res.status(500).json({success: false, error: error}) 
         }
     }
 
@@ -28,7 +29,7 @@ class OrderController {
             } 
             res.send(order);       
         } catch (error) {
-            return res.status(500).json({success: false, error: err}) 
+            return res.status(500).json({success: false, error: error}) 
         }
     }
 
@@ -70,11 +71,11 @@ class OrderController {
             order = await order.save();
         
             if(!order) {
-                return res.status(404).send('the order cannot be created!')
+                return res.status(500).send('the order cannot be created!')
             } 
             res.send(order);       
         } catch (error) {
-            return res.status(500).json({success: false, error: err}) 
+            return res.status(500).json({success: false, error: error}) 
         }
     }
 
@@ -89,11 +90,11 @@ class OrderController {
             )
         
             if(!order) {
-                return res.status(404).send('the order cannot be updated!')
+                return res.status(500).send('the order cannot be updated!')
             } 
             res.send(order);       
         } catch (error) {
-            return res.status(500).json({success: false, error: err}) 
+            return res.status(500).json({success: false, error: error}) 
         }
     }
 
@@ -102,11 +103,11 @@ class OrderController {
             const order = await Order.findByIdAndRemove(req.params.id)
         
             if(!order) {
-                return res.status(404).send('the order cannot be deleted!')
+                return res.status(500).send('the order cannot be deleted!')
             } 
             res.send(order);       
         } catch (error) {
-            return res.status(500).json({success: false, error: err}) 
+            return res.status(500).json({success: false, error: error}) 
         }
     }
 
@@ -115,26 +116,30 @@ class OrderController {
             const totalSales = await Order.aggregate([
                 { $group: { _id: null , totalsales: { $sum: '$totalPrice'}}}
             ])
-        
-            if(!totalSales) {
-                return res.status(404).send('the order sales cannot be generated!')
+            console.log(totalSales);
+            if(typeof totalSales === 'undefined') {
+                return res.status(500).send('the order sales cannot be generated!')
             } 
-            res.send({totalsales: totalSales.pop().totalsales});       
+            let extractedTotalSales; 
+            if(totalSales.length) extractedTotalSales = totalSales.pop().totalsales;
+            else extractedTotalSales = 0;
+            res.send({totalsales:  extractedTotalSales});       
         } catch (error) {
-            return res.status(500).json({success: false, error: err}) 
+            console.log(error);
+            return res.status(500).json({success: false, error: error}) 
         }
     }
 
     async getTotalOrders(req, res) {
         try {
             const orderCount = await Order.countDocuments((count) => count)
-        
-            if(!orderCount) {
-                return res.status(404).send('No Orders')
+            
+            if(orderCount !== 0 && !orderCount) {
+                return res.status(500).send('No Orders')
             } 
             res.send({orderCount: orderCount});       
         } catch (error) {
-            return res.status(500).json({success: false, error: err}) 
+            return res.status(500).json({success: false, error: error}) 
         }
     }
 
@@ -151,7 +156,44 @@ class OrderController {
             } 
             res.send(userOrderList);       
         } catch (error) {
-            return res.status(500).json({success: false, error: err}) 
+            return res.status(500).json({success: false, error: error}) 
+        }
+    }
+
+    async createCheckoutSession(req, res) {
+        try {
+            const orderItems = req.body;
+            if(!orderItems) {
+                return res.status(500).send('the order cannot be created!')
+            }
+
+            const lineItems = await Promise.all(
+                orderItems.map(async (orderItem) => {
+                    const product = await Product.findById(orderItem.product);
+                    return {
+                        price_data: {
+                            currency: 'usd',
+                            product_data: {
+                                name: product.name
+                            },
+                            unit_amount: product.price * 100
+                        },
+                        quantity: orderItem.quantity
+                    }
+                })
+            );
+
+            const session = await stripe.checkout.sessions.create({
+                payment_method_types: ['card'],
+                line_items: lineItems,
+                mode: 'payment',
+                success_url: `http://localhost:4200/success`,
+                cancel_url: `http://localhost:4200/error`,
+            });
+
+            res.json({id: session.id});
+        } catch (error) {
+            return res.status(500).json({success: false, error: error})    
         }
     }
 
